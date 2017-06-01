@@ -74,8 +74,8 @@ void FindCorrespondingPoint(vector<Point3D> &P, vector<Point3D> &Q, vector<Point
 		{
 		    itq++; qcount++;
 		}
-		X.push_back(*itq);
-		Q.erase(itq);
+		X.push_back(*itq); cout<<pos<<endl;
+		//Q.erase(itq);
 	}
 
 }
@@ -94,10 +94,10 @@ void CalculateRotation(vector<Point3D> &P, vector<Point3D> &X, Rotation &R, Poin
 		cov[7] += (itp->z-P_mean.z)*(itx->y-X_mean.y) / P.size();//(3,2)
 		cov[8] += (itp->z-P_mean.z)*(itx->z-X_mean.z) / P.size();//(3,3)
 	}
-        cout<<"cov: "<<endl;
+        //cout<<"cov: "<<endl;
         Matrix3f B;
         B  << cov[0], cov[1], cov[2], cov[3], cov[4], cov[5], cov[6], cov[7], cov[8];
-        cout<<B<<endl;
+        //cout<<B<<endl;
 	//build 4*4 symetric matrix
 	float Q[16];
 	//first line
@@ -123,7 +123,7 @@ void CalculateRotation(vector<Point3D> &P, vector<Point3D> &X, Rotation &R, Poin
 
 	Matrix4f A;
 	A << Q[0], Q[1], Q[2], Q[3], Q[4], Q[5], Q[6], Q[7], Q[8], Q[9], Q[10], Q[11], Q[12], Q[13], Q[14], Q[15];
-	cout<<A<<endl;
+	//cout<<A<<endl;
 	EigenSolver<Matrix4f> es(A);
 
 	Matrix4f D = es.pseudoEigenvalueMatrix();
@@ -136,10 +136,10 @@ void CalculateRotation(vector<Point3D> &P, vector<Point3D> &X, Rotation &R, Poin
 	}
     float q[]={V(0,pos), V(1,pos), V(2,pos), V(3,pos)};
 
-    cout<<"D: "<<endl;cout<<D<<endl;
-    cout<<"V: "<<endl;cout<<V<<endl;
-    cout<<"unit quaternion:"<<endl;
-    cout<<q[0]<<" "<<q[1]<<" "<<q[2]<<" "<<q[3]<<endl;
+    //cout<<"D: "<<endl;cout<<D<<endl;
+    //cout<<"V: "<<endl;cout<<V<<endl;
+    //cout<<"unit quaternion:"<<endl;
+    //cout<<q[0]<<" "<<q[1]<<" "<<q[2]<<" "<<q[3]<<endl;
 
 	//calculate rotation matrix with unit quaternion
 
@@ -219,7 +219,7 @@ int main()
 
 	}
 
-	if (fclose(fp)) {printf("error, file fails to close.\n");}
+	if (fclose(fp)) {printf("error,first file fails to close.\n");}
 
 	fp=NULL;
 
@@ -242,7 +242,7 @@ int main()
 
 	}
 
-	if (fclose(fp)) {printf("error, file fails to close.\n");}
+	if (fclose(fp)) {printf("error,second file fails to close.\n");}
 
 	fp=NULL;
 
@@ -259,20 +259,20 @@ int main()
 
     //begin iterating
     int itcount=0;
-    while(E>0.0001 && itcount<10){
+    while(E>0.000001 && itcount<20){
         FindCorrespondingPoint(P, Q, X, E);
         CalculateMeanPoint3D(P, P_mean);
         CalculateMeanPoint3D(X, X_mean);
         CalculateRotation(P, X, R, P_mean, X_mean);
         Rotate(P, R);
 
-        Q.insert(Q.end(),X.begin(),X.end());
-        cout<<"Q: "<<endl; print(Q);
+        //Q.insert(Q.end(),X.begin(),X.end());
+        //cout<<"Q: "<<endl; print(Q);
         CalculateMeanPoint3D(Q, Q_mean);
         T.x = Q_mean.x - P_mean.x;
         T.y = Q_mean.y - P_mean.y;
         T.z = Q_mean.z - P_mean.z;
-        MovingPointSet(P, T);cout<<"P: "<<endl; print(P);
+        MovingPointSet(P, T);//cout<<"P: "<<endl; print(P);
         X.clear();
         itcount++;
         cout<<itcount<<" "<<E<<endl;
@@ -286,5 +286,16 @@ int main()
     }
     //cout<<E<<endl;
 
+    F_PATH = "C:\\Users\\LIJ\\Desktop\\icp0\\data\\bunny_changed2.asc";
+    fp = fopen(F_PATH, "w");
+    vector<Point3D>::iterator itp;
+    for(itp=P.begin(); itp!=P.end(); itp++)
+    {
+        fprintf(fp,"%f ", itp->x);
+        fprintf(fp,"%f ", itp->y);
+        fprintf(fp,"%f\n", itp->z);
+    }
+    fclose(fp);
+    fp=NULL;
     return 0;
 }
